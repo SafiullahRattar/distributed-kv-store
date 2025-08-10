@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package kvstore;
+
+// ============================================================================
+// Key-Value Store Service
+// Exposed to clients for GET/PUT/DELETE operations.
+// ============================================================================
+service KVStore {
+  rpc Get(GetRequest)       returns (GetResponse);
+  rpc Put(PutRequest)       returns (PutResponse);
+  rpc Delete(DeleteRequest) returns (DeleteResponse);
+}
+
+// ============================================================================
+// Internal Replication Service
+// Used between nodes for leader-follower replication and cluster management.
+// ============================================================================
+service InternalReplication {
+  // Leader sends replicated writes to followers
+  rpc ReplicateWrite(ReplicateWriteRequest)   returns (ReplicateWriteResponse);
+  rpc ReplicateDelete(ReplicateDeleteRequest) returns (ReplicateDeleteResponse);
+
+  // Heartbeat / liveness check
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+
+  // Key transfer during ring rebalancing (node join/leave)
+  rpc TransferKeys(TransferKeysRequest) returns (TransferKeysResponse);
+}
+
+// ---------------------------------------------------------------------------
+// Client-facing messages
+// ---------------------------------------------------------------------------
+
+message GetRequest {
+  string key = 1;
+}
+
+message GetResponse {
+  bool   found = 1;
+  string value = 2;
+}
+
+message PutRequest {
+  string key   = 1;
+  string value = 2;
+}
+
+message PutResponse {
+  bool success = 1;
+}
+
+message DeleteRequest {
+  string key = 1;
+}
+
+message DeleteResponse {
+  bool success = 1;
+}
+
+// ---------------------------------------------------------------------------
+// Replication messages
+// ---------------------------------------------------------------------------
+
+message ReplicateWriteRequest {
+  string key       = 1;
+  string value     = 2;
+  uint64 timestamp = 3;   // monotonic clock for ordering
+}
+
+message ReplicateWriteResponse {
+  bool success = 1;
+}
+
+message ReplicateDeleteRequest {
+  string key       = 1;
+  uint64 timestamp = 2;
+}
+
+message ReplicateDeleteResponse {
+  bool success = 1;
+}
+
+// ---------------------------------------------------------------------------
+// Heartbeat messages
+// ---------------------------------------------------------------------------
+
+message HeartbeatRequest {
+  string node_id = 1;
+}
+
+message HeartbeatResponse {
+  bool   alive   = 1;
+  string node_id = 2;
+}
+
+// ---------------------------------------------------------------------------
+// Key-transfer messages (rebalancing)
+// ---------------------------------------------------------------------------
+
+message KeyValuePair {
+  string key   = 1;
+  string value = 2;
+}
+
+message TransferKeysRequest {
+  repeated KeyValuePair pairs = 1;
+}
+
+message TransferKeysResponse {
+  bool   success        = 1;
+  uint32 keys_received  = 2;
+}

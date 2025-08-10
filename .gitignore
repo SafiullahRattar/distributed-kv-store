@@ -1,0 +1,35 @@
+# Build output
+build/
+cmake-build-*/
+out/
+
+# Generated protobuf/gRPC files
+generated/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Compiled objects
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+
+# WAL files (runtime data)
+*.wal
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Compile commands (useful locally, not needed in repo)
+compile_commands.json
+
+# Environment / secrets
+.env
+.env.*
